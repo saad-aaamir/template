@@ -1,0 +1,12 @@
+/.project
+/.settings/
+/.idea/
+/bin/
+/athena-backend.iml
+*.iml
+/signup-service/signup-service.iml~Stashed changes
+/*/target/**
+/target/
+*.log
+**/.DS_Store
+*.class
