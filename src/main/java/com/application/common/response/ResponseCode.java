@@ -14,7 +14,8 @@ public enum ResponseCode {
     LOGOUT_SUCCESSFULLY("1008"),
     USER_DISABLED("1009"),
     USER_ACTIVATED_SUCCESSFULLY("1010"),
-    USER_SIGN_UP_FAILED("1011");
+    USER_SIGN_UP_FAILED("1011"),
+    URL_FETCHED_SUCCESSFULLY("1012");
 
     private final String code;
 
