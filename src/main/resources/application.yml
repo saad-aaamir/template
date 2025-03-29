@@ -8,6 +8,13 @@ custom:
   password: ${EMAIL_PASSWORD}
   url: ${APPLICATION_URL}
 
+aws:
+  accessKey: YOUR_ACCESS_KEY
+  secretKey: YOUR_SECRET_KEY
+  region: us-east-1
+  s3:
+    bucket: your-bucket-name
+
 spring:
 
   datasource:
