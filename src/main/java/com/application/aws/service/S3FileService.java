@@ -30,13 +30,6 @@ public class S3FileService {
         this.amazonS3 = amazonS3;
     }
 
-    /**
-     * Upload a file to a user's folder in S3
-     *
-     * @param userId The UUID of the user
-     * @param file   The file to upload
-     * @return The key (path) of the uploaded file
-     */
     public String uploadFile(String userId, MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
@@ -61,13 +54,6 @@ public class S3FileService {
         return key;
     }
 
-    /**
-     * Get file from S3
-     *
-     * @param userId   The UUID of the user
-     * @param fileName The name of the file to retrieve
-     * @return S3Object containing the file
-     */
     public S3Object getFile(String userId, String fileName) {
         String key = userId + "/" + fileName;
 
@@ -78,13 +64,6 @@ public class S3FileService {
         return amazonS3.getObject(bucketName, key);
     }
 
-    /**
-     * Delete a file from S3
-     *
-     * @param userId   The UUID of the user
-     * @param fileName The name of the file to delete
-     * @return true if deletion was successful
-     */
     public boolean deleteFile(String userId, String fileName) {
         String key = userId + "/" + fileName;
 
@@ -96,12 +75,6 @@ public class S3FileService {
         return true;
     }
 
-    /**
-     * List all files in a user's folder
-     *
-     * @param userId The UUID of the user
-     * @return List of file names in the user's folder
-     */
     public List<String> listUserFiles(String userId) {
         String prefix = userId + "/";
         ListObjectsV2Request request = new ListObjectsV2Request()
@@ -123,14 +96,6 @@ public class S3FileService {
         return fileNames;
     }
 
-    /**
-     * Generate a pre-signed URL for temporary access to a file
-     *
-     * @param userId                  The UUID of the user
-     * @param fileName                The name of the file
-     * @param expirationTimeInMinutes How long the URL should be valid for
-     * @return The pre-signed URL
-     */
     public String generatePreSignedUrl(String userId, String fileName, int expirationTimeInMinutes) {
         String key = userId + "/" + fileName;
 
@@ -146,12 +111,6 @@ public class S3FileService {
         return amazonS3.generatePresignedUrl(bucketName, key, expiration).toString();
     }
 
-    /**
-     * Check if a file exists in S3
-     *
-     * @param key The full path to the file
-     * @return true if the file exists
-     */
     private boolean fileExists(String key) {
         return amazonS3.doesObjectExist(bucketName, key);
     }
