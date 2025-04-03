@@ -1,5 +1,6 @@
 package com.application.config.jwt;
 
+import com.application.baseUser.BaseUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -7,6 +8,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -30,27 +32,35 @@ public class JwtService {
     private final AccessTokenRepository accessTokenRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public String generateAccessToken(UserDetails userDetails) {
+    public String generateAccessToken(BaseUser baseUser) {
+        Claims claims = Jwts.claims();
+        String authority = baseUser.getAuthorities().stream()
+                .findFirst()
+                .map(GrantedAuthority::getAuthority)
+                .orElse(null);
+        claims.put("user", baseUser.getUuid());
+        claims.put("authority", authority);
         String token = Jwts.builder()
-                .setSubject(userDetails.getUsername())
+//                .setSubject(baseUser.getUuid())
+                .addClaims(claims)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
 
-        accessTokenRepository.save(AccessToken.create(token, userDetails.getUsername()));
+        accessTokenRepository.save(AccessToken.create(token, baseUser.getUsername()));
         return token;
     }
 
-    public String generateRefreshToken(UserDetails userDetails) {
+    public String generateRefreshToken(BaseUser user) {
         String token = Jwts.builder()
-                .setSubject(userDetails.getUsername())
+                .setSubject(user.getUuid())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + refreshExpiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
 
-        refreshTokenRepository.save(RefreshToken.create(token, userDetails.getUsername()));
+        refreshTokenRepository.save(RefreshToken.create(token, user.getUsername()));
         return token;
     }
 
