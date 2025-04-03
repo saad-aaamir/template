@@ -4,7 +4,7 @@ server:
     context-path: /app
 
 custom:
-  secretKey: Budgety
+  secretKey: secret_key
   email: ${EMAIL}
   password: ${EMAIL_PASSWORD}
   url: ${APPLICATION_URL}
@@ -67,6 +67,6 @@ springdoc:
 logging:
   level:
     com:
-      budgety=INFO:
+      application=INFO:
       org.hibernate.SQL: OFF
       org.hibernate.type.descriptor.sql.BasicBinder: OFF
