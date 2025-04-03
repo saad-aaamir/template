@@ -30,13 +30,13 @@ public class S3FileService {
         this.amazonS3 = amazonS3;
     }
 
-    public String uploadFile(String userId, MultipartFile file) throws IOException {
+    public String uploadFile(String userUuid, MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
         }
 
         // Generate folder path based on user's UUID
-        String folderPath = userId + "/";
+        String folderPath = userUuid + "/";
 
         // Create full key path with filename
         String key = folderPath + file.getOriginalFilename();
@@ -54,8 +54,8 @@ public class S3FileService {
         return key;
     }
 
-    public S3Object getFile(String userId, String fileName) {
-        String key = userId + "/" + fileName;
+    public S3Object getFile(String userUuid, String fileName) {
+        String key = userUuid + "/" + fileName;
 
         if (!fileExists(key)) {
             throw new RuntimeException("File not found: " + fileName);
@@ -64,8 +64,8 @@ public class S3FileService {
         return amazonS3.getObject(bucketName, key);
     }
 
-    public boolean deleteFile(String userId, String fileName) {
-        String key = userId + "/" + fileName;
+    public boolean deleteFile(String userUuid, String fileName) {
+        String key = userUuid + "/" + fileName;
 
         if (!fileExists(key)) {
             return false;
@@ -75,8 +75,8 @@ public class S3FileService {
         return true;
     }
 
-    public List<String> listUserFiles(String userId) {
-        String prefix = userId + "/";
+    public List<String> listUserFiles(String userUuid) {
+        String prefix = userUuid + "/";
         ListObjectsV2Request request = new ListObjectsV2Request()
                 .withBucketName(bucketName)
                 .withPrefix(prefix)
@@ -96,8 +96,8 @@ public class S3FileService {
         return fileNames;
     }
 
-    public String generatePreSignedUrl(String userId, String fileName, int expirationTimeInMinutes) {
-        String key = userId + "/" + fileName;
+    public String generatePreSignedUrl(String userUuid, String fileName, int expirationTimeInMinutes) {
+        String key = userUuid + "/" + fileName;
 
         if (!fileExists(key)) {
             throw new RuntimeException("File not found: " + fileName);
