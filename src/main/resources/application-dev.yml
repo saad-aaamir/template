@@ -64,6 +64,8 @@ springdoc:
     - /auth/**
     - /brand/**
     - /user/**
+    - /api/folders/**
+    - /api/files/**
 logging:
   level:
     com:

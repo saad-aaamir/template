@@ -10,14 +10,12 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 @Service
 public class S3FileService {
 
@@ -30,13 +28,18 @@ public class S3FileService {
         this.amazonS3 = amazonS3;
     }
 
-    public String uploadFile(String userUuid, MultipartFile file) throws IOException {
+    /**
+     * Upload file with a specific path
+     */
+    public String uploadFileWithPath(String folderPath, MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
         }
 
-        // Generate folder path based on user's UUID
-        String folderPath = userUuid + "/";
+        // Ensure folder path ends with a slash
+        if (!folderPath.endsWith("/")) {
+            folderPath += "/";
+        }
 
         // Create full key path with filename
         String key = folderPath + file.getOriginalFilename();
@@ -54,19 +57,28 @@ public class S3FileService {
         return key;
     }
 
-    public S3Object getFile(String userUuid, String fileName) {
-        String key = userUuid + "/" + fileName;
+    /**
+     * Upload file with user's UUID as the root folder (original method)
+     */
+    public String uploadFile(String userUuid, MultipartFile file) throws IOException {
+        return uploadFileWithPath(userUuid + "/", file);
+    }
 
+    /**
+     * Get S3 object by key
+     */
+    public S3Object getFile(String key) {
         if (!fileExists(key)) {
-            throw new RuntimeException("File not found: " + fileName);
+            throw new RuntimeException("File not found with key: " + key);
         }
 
         return amazonS3.getObject(bucketName, key);
     }
 
-    public boolean deleteFile(String userUuid, String fileName) {
-        String key = userUuid + "/" + fileName;
-
+    /**
+     * Delete file by key
+     */
+    public boolean deleteFile(String key) {
         if (!fileExists(key)) {
             return false;
         }
@@ -75,8 +87,15 @@ public class S3FileService {
         return true;
     }
 
-    public List<String> listUserFiles(String userUuid) {
-        String prefix = userUuid + "/";
+    /**
+     * List files in a specific path/prefix
+     */
+    public List<String> listFilesInPath(String prefix) {
+        // Ensure prefix ends with a slash
+        if (!prefix.endsWith("/")) {
+            prefix += "/";
+        }
+
         ListObjectsV2Request request = new ListObjectsV2Request()
                 .withBucketName(bucketName)
                 .withPrefix(prefix)
@@ -85,10 +104,11 @@ public class S3FileService {
         ListObjectsV2Result result = amazonS3.listObjectsV2(request);
         List<String> fileNames = new ArrayList<>();
 
+        // Get files in current directory
         for (S3ObjectSummary objectSummary : result.getObjectSummaries()) {
-            // Remove the prefix to get just the filename
             String key = objectSummary.getKey();
             if (!key.equals(prefix)) {
+                // Extract just the filename
                 fileNames.add(key.substring(prefix.length()));
             }
         }
@@ -96,11 +116,39 @@ public class S3FileService {
         return fileNames;
     }
 
-    public String generatePreSignedUrl(String userUuid, String fileName, int expirationTimeInMinutes) {
-        String key = userUuid + "/" + fileName;
+    /**
+     * List subdirectories in a specific path/prefix
+     */
+    public List<String> listSubdirectoriesInPath(String prefix) {
+        // Ensure prefix ends with a slash
+        if (!prefix.endsWith("/")) {
+            prefix += "/";
+        }
 
+        ListObjectsV2Request request = new ListObjectsV2Request()
+                .withBucketName(bucketName)
+                .withPrefix(prefix)
+                .withDelimiter("/");
+
+        ListObjectsV2Result result = amazonS3.listObjectsV2(request);
+        List<String> subDirectories = new ArrayList<>();
+
+        // Get subdirectories
+        for (String commonPrefix : result.getCommonPrefixes()) {
+            // Remove the prefix and trailing slash to get just the directory name
+            String dirName = commonPrefix.substring(prefix.length(), commonPrefix.length() - 1);
+            subDirectories.add(dirName);
+        }
+
+        return subDirectories;
+    }
+
+    /**
+     * Generate pre-signed URL for a file
+     */
+    public String generatePreSignedUrl(String key, int expirationTimeInMinutes) {
         if (!fileExists(key)) {
-            throw new RuntimeException("File not found: " + fileName);
+            throw new RuntimeException("File not found: " + key);
         }
 
         java.util.Date expiration = new java.util.Date();
@@ -111,7 +159,10 @@ public class S3FileService {
         return amazonS3.generatePresignedUrl(bucketName, key, expiration).toString();
     }
 
-    private boolean fileExists(String key) {
+    /**
+     * Check if a file exists
+     */
+    public boolean fileExists(String key) {
         return amazonS3.doesObjectExist(bucketName, key);
     }
 }
