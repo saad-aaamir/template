@@ -1,8 +1,8 @@
-package com.application.baseUser;
+package com.application.baseuser;
 
-import com.application.baseUser.request.AuthorizationRequest;
-import com.application.baseUser.request.RegisterUserRequest;
-import com.application.baseUser.response.AuthenticationResponse;
+import com.application.baseuser.request.AuthorizationRequest;
+import com.application.baseuser.request.RegisterUserRequest;
+import com.application.baseuser.response.AuthenticationResponse;
 import com.application.common.enums.RoleType;
 import com.application.common.enums.URLS;
 import com.application.common.exceptions.ApplicationException;

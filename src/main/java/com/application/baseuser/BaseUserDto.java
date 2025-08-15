@@ -1,4 +1,4 @@
-package com.application.baseUser;
+package com.application.baseuser;
 
 import lombok.Data;
 import lombok.Builder;

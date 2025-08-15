@@ -1,6 +1,6 @@
 package com.application.config.jwt;
 
-import com.application.baseUser.BaseUser;
+import com.application.baseuser.BaseUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -9,7 +9,6 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -19,7 +18,6 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class JwtService {
-
     @Value("${application.security.jwt.secret-key}")
     private String secretKey;
 
@@ -48,7 +46,7 @@ public class JwtService {
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
 
-        accessTokenRepository.save(AccessToken.create(token, baseUser.getUsername()));
+        accessTokenRepository.save(AccessToken.create(token, baseUser.getUuid()));
         return token;
     }
 
@@ -65,7 +63,7 @@ public class JwtService {
     }
 
     public void revokeTokens(String email) {
-        accessTokenRepository.findByEmail(email).ifPresent(accessToken -> {
+        accessTokenRepository.findByUuid(email).ifPresent(accessToken -> {
             accessToken.setRevoked(true);
             accessTokenRepository.save(accessToken);
         });
@@ -75,9 +73,9 @@ public class JwtService {
         });
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    public boolean isTokenValid(String token, BaseUser userDetails) {
+        final String userUuid = extractUserUuid(token);
+        return userUuid.equals(userDetails.getUuid()) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
@@ -88,11 +86,15 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public String extractUserUuid(String token) {
+        return extractClaim(token, claims -> claims.get("user", String.class));
+    }
+
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }

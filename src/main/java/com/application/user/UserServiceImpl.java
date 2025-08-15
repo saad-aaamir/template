@@ -1,6 +1,6 @@
 package com.application.user;
 
-import com.application.baseUser.BaseUserRepository;
+import com.application.baseuser.BaseUserRepository;
 import com.application.config.jwt.JwtService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

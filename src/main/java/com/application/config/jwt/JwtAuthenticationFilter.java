@@ -1,8 +1,7 @@
-package com.application.config;
+package com.application.config.jwt;
 
-import com.application.config.jwt.AccessToken;
-import com.application.config.jwt.AccessTokenRepository;
-import com.application.config.jwt.JwtService;
+
+import com.application.baseuser.BaseUserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,8 +22,8 @@ import java.util.Optional;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
     private final AccessTokenRepository accessTokenRepository;
+    private final BaseUserRepository baseUserRepository;
 
     @Override
     protected void doFilterInternal(
@@ -36,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
-        final String userEmail;
+        final String userUuid;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -44,11 +41,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwt);
+        userUuid = jwtService.extractUserUuid(jwt);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-            Optional<AccessToken> storedToken = accessTokenRepository.findAllByEmail(userEmail).stream().filter(accessToken -> accessToken.getToken().equals(jwt)).findAny();
+        if (userUuid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            com.application.baseuser.BaseUser userDetails = baseUserRepository.findByUuid(userUuid);
+            Optional<AccessToken> storedToken = accessTokenRepository.findAllByUuid(userUuid).stream().filter(accessToken -> accessToken.getToken().equals(jwt)).findAny();
 
             if (storedToken.isPresent() && !storedToken.get().isRevoked()) {
                 if (jwtService.isTokenValid(jwt, userDetails)) {

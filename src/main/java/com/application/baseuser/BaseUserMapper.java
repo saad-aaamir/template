@@ -1,4 +1,4 @@
-package com.application.baseUser;
+package com.application.baseuser;
 
 import org.mapstruct.Mapper;
 

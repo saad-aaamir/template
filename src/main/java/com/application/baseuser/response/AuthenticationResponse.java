@@ -1,4 +1,4 @@
-package com.application.baseUser.response;
+package com.application.baseuser.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,6 +1,6 @@
 package com.application.user;
 
-import com.application.baseUser.BaseUser;
+import com.application.baseuser.BaseUser;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

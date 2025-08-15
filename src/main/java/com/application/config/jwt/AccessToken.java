@@ -4,35 +4,33 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.Instant;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 
 import java.io.Serializable;
+import java.time.Instant;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash(value = "AccessToken", timeToLive = 900) // 15 min expiry
+@RedisHash(value = "AccessToken", timeToLive = 86400)
 public class AccessToken implements Serializable {
 
     @Id
     private String token;
     @Indexed
-    private String email;
+    private String uuid;
     private boolean revoked;
     private boolean expired;
     private Instant createdAt;
     private Instant lastUpdatedAt;
 
-    public static AccessToken create(String token, String userEmail) {
+    public static AccessToken create(String token, String uuid) {
         return AccessToken.builder()
                 .token(token)
-                .email(userEmail)
+                .uuid(uuid)
                 .revoked(false)
                 .expired(false)
                 .createdAt(Instant.now())

@@ -1,7 +1,7 @@
-package com.application.baseUser;
+package com.application.baseuser;
 
-import com.application.baseUser.request.AuthorizationRequest;
-import com.application.baseUser.request.RegisterUserRequest;
+import com.application.baseuser.request.AuthorizationRequest;
+import com.application.baseuser.request.RegisterUserRequest;
 import com.application.common.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
